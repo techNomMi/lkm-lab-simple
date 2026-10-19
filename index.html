@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Лабораторная работа № 2 — ЛКМ</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="model.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header>
+    <h1>Лабораторная работа № 2</h1>
+    <p>Моделирование процесса приготовления лакокрасочных материалов</p>
+    <button id="menu" aria-expanded="false" aria-controls="sidebar">Показать параметры</button>
+  </header>
+
+  <div class="layout">
+    <aside id="sidebar">
+      <nav aria-label="Разделы отчёта">
+        <a href="#home">Главная</a>
+        <a href="#theory">Теория</a>
+        <a href="#math">Модель</a>
+        <a href="#simulation">Расчёт</a>
+        <a href="#optimization">Оптимизация</a>
+        <a href="#results">Результаты</a>
+        <a href="#defense">О программе</a>
+      </nav>
+
+      <form id="parameters">
+        <h2>Исходные данные</h2>
+        <label for="volume">Объём V, л</label>
+        <input id="volume" type="number" min="0.1" max="100000" step="any" value="100" required>
+        <label for="n">Скорость n, об/мин</label>
+        <input id="n" type="number" min="100" max="500" step="any" value="300" required>
+        <input id="n-range" type="range" min="100" max="500" value="300" aria-label="Скорость мешалки">
+        <label for="t">Время t, мин</label>
+        <input id="t" type="number" min="1" max="20" step="any" value="10" required>
+        <input id="t-range" type="range" min="1" max="20" step="0.1" value="10" aria-label="Время смешивания">
+        <label for="k">Коэффициент k, 1/оборот</label>
+        <input id="k" type="number" min="0.000001" max="1" step="any" value="0.001" required>
+        <label for="target">Требуемая однородность, %</label>
+        <input id="target" type="number" min="0.1" max="99.99" step="any" value="95" required>
+        <button type="button" id="reset">Сбросить параметры</button>
+      </form>
+    </aside>
+
+    <main>
+      <div id="error" class="notice error" role="alert" hidden></div>
+
+      <section id="home" class="page">
+        <h2>Главная</h2>
+        <p><b>Цель работы:</b> изучить влияние скорости мешалки и времени на однородность смеси и найти режим с минимальными условными энергозатратами.</p>
+        <p>Для приготовления ЛКМ в смеситель подаются смола и растворитель. Перемешивание нужно для равномерного распределения компонентов.</p>
+        <h3>Схема установки</h3>
+        <svg class="scheme" viewBox="0 0 650 240" role="img" aria-label="Смола и растворитель поступают в смеситель, из него выходит готовый ЛКМ">
+          <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#444"/></marker></defs>
+          <g fill="white" stroke="#555" stroke-width="2">
+            <rect x="15" y="25" width="130" height="55"/>
+            <rect x="15" y="150" width="130" height="55"/>
+            <path d="M255 50 V175 Q320 215 385 175 V50"/>
+            <ellipse cx="320" cy="50" rx="65" ry="15"/>
+            <rect x="475" y="90" width="160" height="60"/>
+          </g>
+          <g fill="none" stroke="#555" stroke-width="2" marker-end="url(#arrow)">
+            <path d="M145 52 H210 V90 H255"/>
+            <path d="M145 177 H210 V140 H255"/>
+            <path d="M385 120 H475"/>
+          </g>
+          <path d="M320 18 V165 M290 150 L350 165 M290 165 L350 150" stroke="#555" stroke-width="3"/>
+          <g fill="#222" text-anchor="middle" font-family="Arial" font-size="15">
+            <text x="80" y="47">Смола</text><text x="80" y="68">G₁, C₁</text>
+            <text x="80" y="173">Растворитель</text><text x="80" y="194">G₂, C₂</text>
+            <text x="320" y="113">V, n, t</text><text x="320" y="230">Смеситель</text>
+            <text x="555" y="116">Готовый ЛКМ</text><text x="555" y="138">G = G₁ + G₂, C(t)</text>
+          </g>
+        </svg>
+        <p>Это балансовая схема непрерывного аппарата. Однородность рассчитывается отдельно по формуле H(t, n).</p>
+        <h3>Текущий режим</h3>
+        <div id="home-metrics" class="metrics"></div>
+        <p>Выберите раздел «Расчёт» для проведения эксперимента. Параметры слева используются во всех разделах.</p>
+      </section>
+
+      <section id="theory" class="page" hidden>
+        <h2>Теория</h2>
+        <p>Мешалка создаёт движение жидкости и уменьшает неоднородность смеси. При увеличении скорости и времени однородность повышается, но затраты энергии тоже растут.</p>
+        <p>Однородность H показывает равномерность распределения компонентов. Концентрация C показывает долю растворителя. Это разные характеристики.</p>
+        <p>Модель концентрации рассматривает непрерывный аппарат постоянного объёма с идеальным перемешиванием. В закрытом аппарате после загрузки средняя концентрация не меняется, но смесь становится однороднее.</p>
+        <p>Принятые формулы учебные: они не учитывают вязкость, температуру, форму мешалки, испарение и пену. Коэффициент k нужно определять по экспериментальным данным.</p>
+      </section>
+
+      <section id="math" class="page" hidden>
+        <h2>Математическая модель</h2>
+        <p class="formula">H(t, n) = 100 · (1 − e<sup>−knt</sup>)</p>
+        <ul>
+          <li>H — однородность, %;</li>
+          <li>n — скорость, об/мин;</li>
+          <li>t — время, мин;</li>
+          <li>k — коэффициент интенсивности, 1/оборот.</li>
+        </ul>
+        <p class="formula">E(n, t) = n² · t → min</p>
+        <p>E — условные энергозатраты, не кВт·ч. Ограничения: 100 ≤ n ≤ 500, 1 ≤ t ≤ 20, H ≥ Hцель. По умолчанию Hцель = 95%.</p>
+        <p>Объём V в формулу однородности не входит. Он используется в балансовой модели концентрации.</p>
+        <h3>Концентрация растворителя</h3>
+        <p class="formula">V · dC/dt = G₁C₁ + G₂C₂ − (G₁ + G₂)C</p>
+        <p class="formula">T = V / (G₁ + G₂)<br>P = (G₁C₁ + G₂C₂) / (G₁ + G₂)<br>C(t) = P + (C₀ − P)e<sup>−t/T</sup></p>
+        <p>G₁ и G₂ — расходы в л/мин, C₁ и C₂ — концентрации в %. T измеряется в минутах. За время T устраняется примерно 63,2% начального отклонения от P.</p>
+        <p><b>Примечание:</b> численные примеры в методичке содержат ошибки. Например, (8,6 − 10) / 2 = −0,7, а не 11,22. В программе использованы сами формулы. Для уравнения A₁C′ + A₂C = P постоянная времени после нормировки равна A₁/A₂.</p>
+      </section>
+
+      <section id="simulation" class="page" hidden>
+        <h2>Расчёт смеси</h2>
+        <p>Измените исходные данные. Результаты пересчитываются автоматически.</p>
+        <div id="sim-metrics" class="metrics"></div>
+        <p id="quality" class="notice"></p>
+        <button id="calculate">Рассчитать и сохранить опыт</button>
+        <p id="saved-message" role="status"></p>
+        <h3>Однородность от времени</h3><div id="time-chart"></div>
+        <h3>Однородность от скорости</h3><div id="speed-chart"></div>
+        <details>
+          <summary>Расчёт концентрации</summary>
+          <div class="concentration-inputs">
+            <label>G₁, л/мин<input id="g1" type="number" min="0" step="any" value="8"></label>
+            <label>G₂, л/мин<input id="g2" type="number" min="0" step="any" value="2"></label>
+            <label>C₁, %<input id="c1" type="number" min="0" max="100" step="any" value="20"></label>
+            <label>C₂, %<input id="c2" type="number" min="0" max="100" step="any" value="100"></label>
+            <label>C₀, %<input id="c0" type="number" min="0" max="100" step="any" value="10"></label>
+          </div>
+          <div id="c-error" role="alert"></div><p id="c-info"></p><div id="c-chart"></div>
+        </details>
+      </section>
+
+      <section id="optimization" class="page" hidden>
+        <h2>Оптимизация</h2>
+        <p>Нужно найти минимальные энергозатраты при заданной однородности и ограничениях по скорости и времени.</p>
+        <div id="opt-result"></div>
+        <button id="optimize">Найти и сохранить оптимум</button>
+        <p id="opt-message" role="status"></p>
+        <h3>Алгоритм</h3>
+        <p>Из условия H ≥ Hцель получаем n · t ≥ q, где q = −ln(1 − Hцель/100) / k.</p>
+        <p>Для каждой скорости минимальное время равно max(1, q/n). Тогда E = max(n², qn) возрастает с n. Берём минимальную допустимую скорость:</p>
+        <p class="formula">n* = max(100, q/20)<br>t* = max(1, q/n*)</p>
+        <p>Если q &gt; 10000, решения в заданных пределах нет. В расчёте скорость и время непрерывны. При округлении настроек надо снова проверить H.</p>
+      </section>
+
+      <section id="results" class="page" hidden>
+        <h2>Результаты экспериментов</h2>
+        <p>Первые шесть опытов рассчитаны при текущих k, V и цели. Далее идут сохранённые опыты с их исходными параметрами.</p>
+        <button id="csv">Скачать CSV</button>
+        <button id="clear">Очистить мои опыты</button>
+        <div class="table-scroll"><table id="results-table"></table></div>
+        <h3>Сравнение режимов</h3><div id="compare-chart"></div>
+        <h3>Вывод</h3><div id="conclusion"></div>
+      </section>
+
+      <section id="defense" class="page" hidden>
+        <h2>О программе</h2>
+        <p>Программа написана на HTML, CSS и JavaScript. Внешние библиотеки не используются.</p>
+        <ul>
+          <li>index.html — страницы и поля ввода;</li>
+          <li>styles.css — оформление;</li>
+          <li>model.js — формулы и поиск оптимума;</li>
+          <li>app.js — обработка ввода, графики, таблица и сохранение опытов.</li>
+        </ul>
+        <p>Опыты хранятся в этом браузере, если доступно локальное хранилище. Для переноса данных на другое устройство используется CSV.</p>
+        <h3>Вопросы к защите</h3>
+        <p><b>На чём основана балансовая модель?</b> На законе сохранения компонента: приход минус расход равен накоплению. В статике накопления нет, C = P.</p>
+        <p><b>Что означает T?</b> Постоянную времени переходного процесса, T = V/G.</p>
+        <p><b>Какие параметры управляемые?</b> Скорость мешалки и время. На выходе рассчитываются H и C(t).</p>
+        <p><b>Как найти время достижения концентрации?</b> t = −T ln((Cц − P)/(C₀ − P)), если C₀ ≠ P, а отношение лежит в (0; 1]. Точное равновесие достигается асимптотически.</p>
+        <p><b>Как проверить адекватность?</b> Сравнить расчёты с независимыми измерениями и оценить ошибку. Одних вычислительных экспериментов для этого недостаточно.</p>
+      </section>
+      <footer>Лабораторная работа № 2. Моделирование приготовления ЛКМ.</footer>
+    </main>
+  </div>
+</body>
+</html>

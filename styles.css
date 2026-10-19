@@ -1,0 +1,73 @@
+/* Обычное оформление учебной работы без внешних библиотек. */
+* { box-sizing: border-box; }
+body { margin: 0; color: #222; background: #f1f1f1; font: 15px/1.5 Arial, sans-serif; }
+header { padding: 18px 24px; background: #e5ecf4; border-bottom: 1px solid #bbb; }
+header h1 { margin: 0; font-size: 25px; }
+header p { margin: 5px 0 0; }
+.layout { display: flex; max-width: 1250px; margin: auto; }
+aside { width: 240px; flex-shrink: 0; padding: 18px; background: #fafafa; border-right: 1px solid #ccc; }
+nav { margin-bottom: 25px; }
+nav a { display: block; padding: 7px 9px; color: #224e80; text-decoration: none; }
+nav a:hover { text-decoration: underline; }
+nav a.active { background: #dce6f3; font-weight: bold; }
+form h2 { font-size: 18px; }
+label { display: block; margin: 12px 0 4px; }
+input[type=number] { width: 100%; padding: 6px; border: 1px solid #aaa; border-radius: 2px; font: inherit; }
+input[type=range] { width: 100%; margin: 8px 0; accent-color: #3268a4; }
+input:invalid { border-color: #ac2929; }
+button { padding: 7px 12px; margin: 6px 5px 6px 0; cursor: pointer; border: 1px solid #8296af; border-radius: 3px; background: #e8edf4; color: #183654; font: inherit; }
+button:hover { background: #dae5f3; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+#reset { margin-top: 17px; width: 100%; }
+#menu { display: none; }
+main { flex: 1; min-width: 0; background: #fff; padding: 22px 28px; }
+h2 { font-size: 23px; margin: 0 0 16px; }
+h3 { font-size: 18px; margin: 25px 0 10px; }
+p { margin: 12px 0; }
+.scheme { width: 100%; max-width: 650px; margin: 5px 0; }
+.metrics { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
+.metric { border: 1px solid #ccc; background: #f8f8f8; padding: 12px; flex: 1; min-width: 160px; }
+.metric-label { font-size: 13px; color: #555; }
+.metric-value { font-size: 23px; margin-top: 5px; }
+.metric small { font-size: 12px; }
+.formula { padding: 12px; border-left: 3px solid #7191b7; background: #f3f5f8; font: 18px/1.6 Georgia, serif; overflow-wrap: anywhere; }
+.notice { padding: 10px; background: #edf4eb; border: 1px solid #bacdb6; }
+.error { background: #fff0ee; border-color: #d2a6a0; color: #962c20; }
+.muted { color: #666; font-size: 13px; }
+.pill { font-size: 13px; }
+details { padding: 12px; margin-top: 24px; border: 1px solid #ccc; }
+summary { cursor: pointer; font-weight: bold; }
+.concentration-inputs { display: flex; flex-wrap: wrap; gap: 10px; }
+.concentration-inputs label { flex: 1; min-width: 100px; font-size: 13px; }
+.concentration-inputs input { margin-top: 4px; }
+.table-scroll { overflow-x: auto; margin: 16px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+th, td { border: 1px solid #bbb; padding: 7px 9px; text-align: left; }
+th { background: #e9edf2; }
+tr:nth-child(even) td { background: #f7f7f7; }
+.badge { color: #266b2b; }
+.badge.no { color: #9a4228; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart text { font: 12px Arial, sans-serif; fill: #444; }
+.chart .grid { stroke: #ddd; }
+.chart .series { fill: none; stroke-width: 2; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; }
+.legend i { display: inline-block; width: 14px; height: 3px; margin-right: 5px; vertical-align: middle; }
+.chart-tooltip { font-size: 12px; min-height: 35px; margin-top: 8px; color: #555; }
+footer { margin-top: 35px; padding-top: 12px; border-top: 1px solid #ccc; font-size: 12px; color: #666; }
+:focus-visible { outline: 2px solid #3268a4; outline-offset: 3px; }
+[hidden] { display: none !important; }
+@media (max-width: 700px) {
+  header { padding: 15px; }
+  header h1 { font-size: 22px; }
+  header p { font-size: 14px; }
+  #menu { display: inline-block; margin-top: 12px; }
+  .layout { display: block; }
+  aside { display: none; width: 100%; border-bottom: 1px solid #ccc; }
+  aside.open { display: block; }
+  nav { display: flex; flex-wrap: wrap; }
+  nav a { font-size: 13px; }
+  form { max-width: 420px; margin: auto; }
+  main { padding: 20px 15px; }
+  .metric { min-width: 140px; }
+}
